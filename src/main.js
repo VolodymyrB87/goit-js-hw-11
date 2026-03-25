@@ -9,21 +9,40 @@ import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
 
 const form = document.querySelector('.js-form');
-form.addEventListener('submit', async e => {
+form.addEventListener('submit', e => {
   e.preventDefault();
+
   const formData = new FormData(form);
-  const qury = formData.get('search-text').trim();
+  const query = formData.get('search-text').trim();
+
+  if (!query) {
+    iziToast.warning({
+      title: 'Warning',
+      message: 'Please enter a search query!',
+    });
+    return;
+  }
+
   clearGallery();
   showLoader();
-  getImagesByQuery(qury)
+
+  getImagesByQuery(query)
     .then(result => {
+      if (result.hits.length === 0) {
+        iziToast.error({
+          title: 'Error',
+          message:
+            'Sorry, there are no images matching your search query. Please try again!',
+        });
+        return;
+      }
+
       createGallery(result.hits);
     })
-    .catch(erro => {
+    .catch(error => {
       iziToast.error({
         title: 'Error',
-        message:
-          'Sorry, there are no images matching your search query. Please try again!',
+        message: 'Something went wrong. Please try again later!',
       });
     })
     .finally(() => {
